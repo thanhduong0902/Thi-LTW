@@ -1,0 +1,23 @@
+.w-70{
+    width: 70%;
+}
+.w-40{
+    width: 40%;
+}
+.custom-th {
+    text-align: center;
+    vertical-align: middle;
+}
+.custom-table tr {
+    height: 56px;
+}
+.custom-table {
+    margin-bottom: 20px; /* Khoảng cách dưới bảng */
+    margin-left: 10px; /* Khoảng cách trái bảng */
+    margin-right: 10px; /* Khoảng cách phải bảng */
+}
+
+.item:hover {
+    background-color: rgba(138, 43, 226, 0.7);
+    cursor: pointer;
+}
