@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { buyBook, getDetailBook, getListCmt, postCmt } from "../Apis/Api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { BsStarFill } from "react-icons/bs";
@@ -19,6 +19,7 @@ function BookViewUser() {
   const [showGetCMT, setShowGetCMT] = useState(false);
   const [checkCMT, setCheckCMT] = useState(false);
   const [cmt, setCmt] = useState("");
+  const navigate = useNavigate();
 
   const [showFullCmt, setShowFullCmt] = useState(false);
   const [bookingTickets, setBookingTickets] = useState([]);
@@ -63,7 +64,7 @@ function BookViewUser() {
     });
   }
 
-  const listCmt = useQuery(`ListCmtDetail${bookid}`, getCmt);
+  const listCmt = useQuery(`ListCmtDetail${bookid}`, getCmt, {});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,15 +78,15 @@ function BookViewUser() {
     () => getDetailBook(bookid)
   );
 
-  if (isLoading || listCmt.isLoading) {
-    return (
-      <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading || listCmt.isLoading) {
+  //   return (
+  //     <div class="d-flex justify-content-center">
+  //       <div class="spinner-border" role="status">
+  //         <span class="visually-hidden">Loading...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   function handleOnclickCancel() {
     setShowGetCMT(false);
@@ -93,8 +94,12 @@ function BookViewUser() {
   }
   function handleOnClickMuaNgay() {
     const body = {
-      userId: profile.auth.id,
-      bookId: bookid,
+      customer: {
+        id: profile.auth.id,
+      },
+      item: {
+        id: bookid,
+      },
       quantity: numberItem,
     };
 
@@ -106,7 +111,7 @@ function BookViewUser() {
     } else {
       Swal.fire({
         icon: "question",
-        title: "Bạn có chắc muốn đặt mua cuốn sách này?",
+        title: "Bạn có chắc muốn muợn cuốn sách này?",
         showCancelButton: true,
         showConfirmButton: true,
         confirmButtonColor: "green",
@@ -115,7 +120,9 @@ function BookViewUser() {
         if (result.isConfirmed) {
           handleBuyBook.mutate(body, {
             onSuccess: (res) => {
-              Swal.fire("Thành công!", "OK!", "success");
+              Swal.fire("Thành công!", "OK!", "success").then((result) => {
+                if (result.isConfirmed) navigate("/HomeViewUser");
+              });
               setNumberItem(0);
             },
           });
@@ -129,7 +136,7 @@ function BookViewUser() {
       <div className="col-sm-3 row ">
         <img
           height={500}
-          src={data.data.results.img}
+          src={data?.data?.linkImage}
           alt="Uploaded Image"
           className="col-sm-12 object-fit-contain"
         />
@@ -142,19 +149,16 @@ function BookViewUser() {
             fontWeight: "bold",
           }}
         >
-          {data.data.results.title}
+          {data?.data?.title}
         </div>
-        <div> Tác Giả: {data.data.results.author}</div>
-        <div>Thể Loại: {data.data.results.type}</div>
-        <div>
-          Ngày phát hành: {moment(data.data.results.date).format("DD-MM-YYYY")}
-        </div>
-        <div>Đã Bán: {data.data.results.soldNumber}</div>
-        <div>Mô tả: {data.data.results.description}</div>
+        <div> Tác Giả: {data?.data?.author?.name}</div>
+        <div>Thể Loại: {data?.data?.category?.name}</div>
+        <div>Mô tả: {data?.data?.des}</div>
+        <div>Số lượng</div>
         <div className="col-sm-6 row align-items-center ">
           <button
             title="-"
-            style={{ height: 40 }}
+            style={{ height: 30, padding: 5 }}
             className="btn btn-warning col-sm-1 justify-content-center"
             disabled={numberItem === 0 ? true : false}
             onClick={() => setNumberItem(numberItem - 1)}
@@ -163,7 +167,7 @@ function BookViewUser() {
           </button>
           <div className="col-sm-1">{numberItem}</div>
           <button
-            style={{ height: 40 }}
+            style={{ height: 30, padding: 5 }}
             className="btn btn-warning col-sm-1 justify-content-center "
             onClick={() => setNumberItem(numberItem + 1)}
           >
@@ -175,23 +179,21 @@ function BookViewUser() {
           className="btn btn-warning "
           onClick={() => handleOnClickMuaNgay()}
         >
-          Mua Ngay
+          Mượn sách
         </button>
       </div>
 
-      <div className="col-sm-6 row text-center">
+      {/* <div className="col-sm-6 row text-center">
         <p className="col-sm-12 ">
-          {listCmt.data.data.results.length > 0
-            ? listCmt.data.data.results.length
-            : "Chưa có"}
+          {listCmt.data.data.length > 0 ? listCmt.data.data.length : "Chưa có"}
           {" bình luận"}
           <span style={{ color: "gold" }}>&#9733;</span>{" "}
         </p>
-      </div>
+      </div> */}
 
-      <div className="col-sm-12 row ">
+      {/* <div className="col-sm-12 row ">
         {showFullCmt &&
-          listCmt.data.data.results.map((item, index) => {
+          listCmt.data.data.map((item, index) => {
             return (
               <div
                 key={index}
@@ -265,7 +267,7 @@ function BookViewUser() {
             Thêm đánh giá
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

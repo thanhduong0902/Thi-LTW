@@ -19,15 +19,13 @@ function BookingUser() {
 
   const handleBackBook = useMutation(backBook);
 
-  const handleCancel = (item) => {
+  const handleCancel = (id) => {
     const body = {
-      quantity: item.quantity,
-      userId: auth.id,
-      bookId: item.id,
+      id: id,
     };
 
     Swal.fire({
-      title: "Bạn có chắc muốn hủy đặt sách này?",
+      title: "Bạn có chắc muốn trả sách này?",
       showCancelButton: true,
       showConfirmButton: true,
       confirmButtonText: "Đồng ý",
@@ -37,9 +35,7 @@ function BookingUser() {
       if (result.isConfirmed) {
         handleBackBook.mutate(body, {
           onSuccess: (res) => {
-            if (res.data.results.success) {
-              queryClient.invalidateQueries("ListBuy");
-            }
+            queryClient.invalidateQueries("ListBuy");
           },
         });
       }
@@ -57,7 +53,7 @@ function BookingUser() {
   }
   return (
     <div>
-      {data?.data?.results.map((item, index) => (
+      {data?.data?.map((item, index) => (
         <div
           className="row p-4 bg-info bg-opacity-10 border border-info  rounded m-2"
           key={index}
@@ -65,7 +61,7 @@ function BookingUser() {
           <div className="col-sm-3 row ">
             <img
               height={500}
-              src={item.img}
+              src={item.item.linkImage}
               alt="Uploaded Image"
               className="col-sm-12 object-fit-contain"
             />
@@ -78,19 +74,18 @@ function BookingUser() {
                 fontWeight: "bold",
               }}
             >
-              {item.title}
+              {item.item.title}
             </div>
-            <div> Tác Giả: {item.author} </div>
-            <div>Mô tả: {item.description} </div>
-            <div>Thể Loại: {item.type}</div>
-            <div>Ngày phát hành: {moment(item.date).format("DD-MM-YYYY")} </div>
-            <div>Số trang: {item.pageNumber} </div>
-            <div>Số lượng đặt: {item.quantity} </div>
+            <div> Tác Giả: {item.item.author?.name} </div>
+            <div>Mô tả: {item.item.des} </div>
+            <div>Thể Loại: {item.item.category?.name}</div>
+            <div>Số trang: {item.item.pageNumber} </div>
+            <div>Số lượng muợn: {item.quantity} </div>
             <button
               className="btn btn-warning col-sm-4 ms-2"
-              onClick={() => handleCancel(item)}
+              onClick={() => handleCancel(item.id)}
             >
-              Hủy đặt
+              Trả sách
             </button>
           </div>
         </div>

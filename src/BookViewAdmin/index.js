@@ -20,24 +20,8 @@ function BookViewAdmin() {
   };
 
   const bookid = params.bookid;
-  const [buttonEAS, setButtonEAS] = useState(bookid < 0 ? "Add" : "Edit");
+  const [buttonEAS, setButtonEAS] = useState(bookid < 0 ? "Thêm" : "Chỉnh sửa");
   const updateBook = useMutation(editBook);
-  const genreOption = [
-    { value: "Chính trị - pháp luật", label: "Chính trị - pháp luật" },
-    {
-      value: "Khoa học công nghệ - Kinh tế",
-      label: "Khoa học công nghệ - Kinh tế",
-    },
-    { value: "Văn hóa xã hội - Lịch sử", label: "Văn hóa xã hội - Lịch sử" },
-    { value: "Giáo trình", label: "Giáo trình" },
-    { value: "Truyện, tiểu thuyết", label: "Truyện, tiểu thuyết" },
-    {
-      value: "Tâm lý, tâm linh, tôn giáo",
-      label: "Tâm lý, tâm linh, tôn giáo",
-    },
-    { value: "Thiếu nhi", label: "Thiếu nhi" },
-    { value: "Văn học nghệ thuật", label: "Văn học nghệ thuật" },
-  ];
 
   const [book, setBook] = useState({});
 
@@ -46,16 +30,11 @@ function BookViewAdmin() {
     () => getDetailBook(bookid)
   );
 
-  const [selectedOption, setSelectedOption] = useState("");
   useEffect(() => {
     if (isSuccess && data && bookid > 0) {
-      setBook(data.data.results);
-      setSelectedOption({
-        value: data.data.results.type,
-        label: data.data.results.type,
-      });
+      setBook(data.data);
     }
-  }, [isSuccess, data]);
+  }, [data]);
 
   const handleFileChange = async (event) => {
     setLoading(true);
@@ -84,28 +63,27 @@ function BookViewAdmin() {
     );
   };
 
-  const handleChange = (option) => {
-    setSelectedOption(option);
-    setBook({ ...book, type: option.value });
-  };
-
   const handleOnclickButtonEAS = () => {
     if (buttonEAS === "Save") {
       const body = {
-        title: book.title,
-        author: book.author,
-        description: book.description,
-        date: moment(book.date).format("YYYY-MM-DD"),
-        pageNumber: book.pageNumber,
-        type: selectedOption.value,
-        img: imgUrl,
         id: bookid,
+        title: book.title,
+        des: book.des,
+        pageNumber: book.pageNumber,
+        linkImage: imgUrl,
+        bardCode: book?.bardcode,
+        author: {
+          name: book?.author?.name,
+        },
+        category: {
+          name: book?.category?.name,
+        },
       };
 
       updateBook.mutate(body, {
         onSuccess: (res) => {
           console.log(res);
-          queryClient.invalidateQueries("listBook");
+          queryClient.invalidateQueries("listItem");
           queryClient.invalidateQueries(`detailBook${bookid}`);
           setBook("");
           navigate("/HomeView");
@@ -119,12 +97,11 @@ function BookViewAdmin() {
   const handleOnClickAdd = () => {
     const body = {
       title: book.title,
-      author: book.author,
-      description: book.description,
-      date: moment(book.date).format("YYYY-MM-DD"),
+      author: { name: book.author?.name },
+      des: book.des,
       pageNumber: book.pageNumber,
-      type: selectedOption.value,
-      img: imgUrl,
+      category: { name: book?.category?.name },
+      linkImage: imgUrl,
     };
     Swal.fire({
       title: "Bạn có chắc muốn thêm sách ?",
@@ -137,17 +114,9 @@ function BookViewAdmin() {
       if (result.isConfirmed) {
         addNewBook.mutate(body, {
           onSuccess: (res) => {
-            if (res.data.results.message) {
-              Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: res.data.results.message,
-              });
-            } else {
-              queryClient.invalidateQueries("listBook");
-              setBook("");
-              navigate("/HomeView");
-            }
+            queryClient.invalidateQueries("listBook");
+            setBook("");
+            navigate("/HomeView");
           },
         });
       }
@@ -161,15 +130,15 @@ function BookViewAdmin() {
     else handleOnClickAdd();
   };
 
-  if (isLoading) {
-    return (
-      <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div class="d-flex justify-content-center">
+  //       <div class="spinner-border" role="status">
+  //         <span class="visually-hidden">Loading...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <form
@@ -194,9 +163,11 @@ function BookViewAdmin() {
             required
             type="text"
             className="col-sm-12 form-control"
-            value={book?.author}
+            value={book?.author?.name}
             disabled={buttonEAS === "Edit"}
-            onChange={(e) => setBook({ ...book, author: e.target.value })}
+            onChange={(e) =>
+              setBook({ ...book, author: { name: e.target.value } })
+            }
           ></input>
         </div>
 
@@ -205,12 +176,12 @@ function BookViewAdmin() {
           disabled={buttonEAS === "Edit"}
           type="text"
           className="col-sm-10 form-control "
-          value={book?.description}
+          value={book?.des}
           rows={6}
-          onChange={(e) => setBook({ ...book, description: e.target.value })}
+          onChange={(e) => setBook({ ...book, des: e.target.value })}
         ></textarea>
 
-        <div className="col-sm-6 row me-2 mt-2">
+        {/* <div className="col-sm-6 row me-2 mt-2">
           <div className="col-sm-12 ">Ngày phát hành:</div>
           <input
             required
@@ -220,7 +191,7 @@ function BookViewAdmin() {
             disabled={buttonEAS === "Edit"}
             onChange={(e) => setBook({ ...book, date: e.target.value })}
           ></input>
-        </div>
+        </div> */}
 
         <div className="col-sm-6 row mt-2">
           <div className="col-sm-12">Số trang:</div>
@@ -232,7 +203,7 @@ function BookViewAdmin() {
             onChange={(e) => setBook({ ...book, pageNumber: e.target.value })}
           ></input>
         </div>
-        {bookid > 0 && (
+        {/* {bookid > 0 && (
           <div className="col-sm-6 row me-2 mt-2">
             <div className="col-sm-12">Số sách đã bán:</div>
             <input
@@ -243,22 +214,24 @@ function BookViewAdmin() {
               onChange={(e) => setBook({ ...book, soldNumber: e.target.value })}
             ></input>
           </div>
-        )}
+        )} */}
 
-        <div className="col-sm-6 row">
-          <div className="col-sm-12 mt-2">Thể loại:</div>
-          <Select
-            isDisabled={buttonEAS === "Edit"}
-            className="col-sm-12"
-            options={genreOption}
-            value={selectedOption}
-            onChange={handleChange}
-          />
+        <div className="col-sm-6 row mt-2 mx-2">
+          <div className="col-sm-12">Thể loại:</div>
+          <input
+            type="text"
+            className="col-sm-12 form-control "
+            value={book?.category?.name}
+            disabled={buttonEAS === "Edit"}
+            onChange={(e) =>
+              setBook({ ...book, category: { name: e.target.value } })
+            }
+          ></input>
         </div>
       </div>
       <div className="col-sm-6 row ">
         <input
-          disabled={buttonEAS === "Edit"}
+          disabled={buttonEAS === "Chỉnh sửa"}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
@@ -267,7 +240,7 @@ function BookViewAdmin() {
         />
         <button
           type="button"
-          className=" col-sm-3 d-flex justify-content-around rounded"
+          className=" col-sm-3 d-flex justify-content-around rounded m-2"
           onClick={handleUploadClick}
         >
           Tải ảnh lên
@@ -280,7 +253,7 @@ function BookViewAdmin() {
           </div>
         ) : (
           <img
-            src={imgUrl ? imgUrl : book.img}
+            src={imgUrl ? imgUrl : book.linkImage}
             className="object-fit-contain rounded"
             height="500"
           />

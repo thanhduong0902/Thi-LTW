@@ -3,14 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, Navbar, Nav, Form, FormControl } from "react-bootstrap";
 import "./homeViewUser.css";
 import AuthContext from "../context/AuthProvider";
-import { getListBook } from "../Apis/Api";
+import { getListItem } from "../Apis/Api";
 import { useQuery } from "react-query";
 import moment from "moment";
 function HomeViewUser() {
   const profile = useContext(AuthContext);
   const navigate = useNavigate();
   const getList = async () => {
-    const response = await getListBook();
+    const response = await getListItem();
     return response;
   };
   const listBook = useQuery("ListBook", getList);
@@ -43,7 +43,7 @@ function HomeViewUser() {
               style={{ marginLeft: "auto", display: "flex" }}
             >
               <Nav.Link href="/HomeViewUSer"> Trang chủ</Nav.Link>
-              <Nav.Link href="/BookingUser">Sách đã đặt mua</Nav.Link>
+              <Nav.Link href="/BookingUser">Sách đã muợn</Nav.Link>
               <Nav.Link
                 href="/"
                 onClick={() => {
@@ -62,7 +62,7 @@ function HomeViewUser() {
         Thư viện Hồi Ức
       </h2>
       <div className="row">
-        {listBook.data.data.results.map((book, index) => (
+        {listBook.data.data.map((book, index) => (
           <div
             onClick={() => {
               navigate(`/BookViewUser/${book.id}`);
@@ -72,20 +72,17 @@ function HomeViewUser() {
             style={{ width: "20rem", margin: 20 }}
           >
             <img
-              src={book.img}
-              className="card-img-top object-fit-fill rounded"
+              src={book.linkImage}
+              className="card-img-top object-fit-contain rounded"
               alt="..."
               style={{ width: "100%", height: 400 }}
             />
             <div className="card-body">
               <h5 className="card-title">{book.title}</h5>
-              <p className="card-text">{book.description}</p>
+              <p className="card-text">Mô tả: {book.des}</p>
             </div>
             <ul className="list-group list-group-flush">
-              <li className="list-group-item">Tác giả : {book.author}</li>
-              <li className="list-group-item">
-                Ngày xuất bản : {moment(book.date).format("DD-MM-YYYY")}
-              </li>
+              <li className="list-group-item">Tác giả : {book.author.name}</li>
             </ul>
           </div>
         ))}

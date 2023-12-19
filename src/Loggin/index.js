@@ -49,26 +49,17 @@ function Loggin() {
     };
     loginMutation.mutate(body, {
       onSuccess: (response) => {
-        if (response.data.results.message) {
-          Swal.fire({
-            icon: "info",
-            title: "Oops...",
-            text: response.data.results.message,
-          });
-        } else {
-          setAuth(response.data.results.user);
-          localStorage.setItem(
-            "user",
-            JSON.stringify(response.data.results.user)
-          );
-          setValues({
-            username: "",
-            password: "",
-          });
-          if (response.data.results.user.id === 1) navigate("/HomeView");
-          else {
-            navigate("HomeViewUser");
-          }
+        console.log(response.data);
+
+        setAuth(response.data);
+        localStorage.setItem("user", JSON.stringify(response.data));
+        setValues({
+          username: "",
+          password: "",
+        });
+        if (response.data.role === "admin") navigate("/HomeView");
+        else {
+          navigate("HomeViewUser");
         }
       },
     });
@@ -98,7 +89,7 @@ function Loggin() {
           </div>
         ))}
 
-        <Link
+        {/* <Link
           to={"/SignUp"}
           style={{
             color: "blueviolet",
@@ -108,7 +99,7 @@ function Loggin() {
           // className=" icon-link-hover"
         >
           Nếu chưa có tài khoản. Đăng kí ngay
-        </Link>
+        </Link> */}
 
         <button className="rounded my-2">Đăng nhập</button>
       </form>
